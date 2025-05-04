@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('fileInput');
     const uploadButton = document.getElementById('uploadButton');
@@ -109,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const productPrice = Array.from(suggestions.children).find(item => item.textContent.startsWith(productName))?.dataset.price;
 
         if (!productId || isNaN(quantity) || quantity <= 0) {
-            alert('Por favor, selecciona un producto válido.');
+            alert('Por favor, selecciona un producto vÃ¡lido.');
             return;
         }
 
@@ -258,22 +257,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const query = `
             SELECT d.ID AS DocumentID, d.Date AS DocumentDate, d.StockDate AS StockDate, d.Total AS DocumentTotal,
                    p.Name AS ProductName, di.Price AS ProductPrice, di.Quantity AS Quantity,
-                   d.Discount AS Discount,
-                   (SELECT SUM(di2.Price * di2.Quantity) 
-                    FROM DocumentItem di2 
-                    JOIN Document d2 ON di2.DocumentID = d2.ID 
-                    WHERE DATE(d2.Date) = '${selectedDate}') AS TotalSum
+                   d.Discount AS Discount
             FROM Document d
             JOIN DocumentItem di ON d.ID = di.DocumentID
             JOIN Product p ON di.ProductId = p.ID
             WHERE DATE(d.Date) = '${selectedDate}'
-            GROUP BY d.ID, d.Date, d.StockDate, d.Total, p.Name, di.Price, di.Quantity, d.Discount
+            ORDER BY d.ID
         `;
 
         const result = db.exec(query);
         salesReportBody.innerHTML = '';
 
-        // Encabezados de la tabla
         const headerRow = document.createElement('tr');
         headerRow.innerHTML = `
             <th>ID Documento</th>
@@ -284,28 +278,52 @@ document.addEventListener('DOMContentLoaded', () => {
             <th>Precio</th>
             <th>Cantidad</th>
             <th>Descuento</th>
-            <th>Total del Día</th>
         `;
         salesReportBody.appendChild(headerRow);
 
+        let totalByDocument = {};
+        let totalDaySum = 0;
+
         if (result.length > 0) {
             result[0].values.forEach(row => {
+                const documentID = row[0];
+                const documentDate = row[1];
+                const stockDate = row[2];
+                const documentTotal = row[3];
+                const productName = row[4];
+                const productPrice = row[5];
+                const quantity = row[6];
+                const discount = row[7];
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${row[0]}</td>
-                    <td>${row[1]}</td>
-                    <td>${row[2]}</td>
-                    <td>$${row[3].toFixed(2)}</td>
-                    <td>${row[4]}</td>
-                    <td>$${row[5].toFixed(2)}</td>
-                    <td>${row[6]}</td>
-                    <td>$${row[7].toFixed(2)}</td>
-                    <td>$${row[8].toFixed(2)}</td>
+                    <td>${documentID}</td>
+                    <td>${documentDate}</td>
+                    <td>${stockDate}</td>
+                    <td>$${documentTotal.toFixed(2)}</td>
+                    <td>${productName}</td>
+                    <td>$${productPrice.toFixed(2)}</td>
+                    <td>${quantity}</td>
+                    <td>$${discount.toFixed(2)}</td>
                 `;
                 salesReportBody.appendChild(tr);
+
+                if (!totalByDocument[documentID]) {
+                    totalByDocument[documentID] = documentTotal;
+                    totalDaySum += documentTotal;
+                }
             });
+
+            const totalRow = document.createElement('tr');
+            totalRow.innerHTML = `
+                <td colspan="3"><strong>Total del DÃ­a</strong></td>
+                <td><strong>$${totalDaySum.toFixed(2)}</strong></td>
+                <td colspan="4"></td>
+            `;
+            salesReportBody.appendChild(totalRow);
+
         } else {
-            salesReportBody.innerHTML += '<tr><td colspan="9">No se encontraron resultados.</td></tr>';
+            salesReportBody.innerHTML += '<tr><td colspan="8">No se encontraron resultados.</td></tr>';
         }
     };
 
@@ -359,4 +377,3 @@ document.addEventListener('DOMContentLoaded', () => {
         clearCart();
     });
 });
-
