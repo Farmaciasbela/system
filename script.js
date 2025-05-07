@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const productPrice = Array.from(suggestions.children).find(item => item.textContent.startsWith(productName))?.dataset.price;
 
         if (!productId || isNaN(quantity) || quantity <= 0) {
-            alert('Por favor, selecciona un producto válido.');
+            alert('Por favor, selecciona un producto v�lido.');
             return;
         }
 
@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const totalRow = document.createElement('tr');
             totalRow.innerHTML = `
-                <td colspan="3"><strong>Total del Día</strong></td>
+                <td colspan="3"><strong>Total del D�a</strong></td>
                 <td><strong>$${totalDaySum.toFixed(2)}</strong></td>
                 <td colspan="4"></td>
             `;
@@ -377,3 +377,44 @@ document.addEventListener('DOMContentLoaded', () => {
         clearCart();
     });
 });
+document.getElementById('printTicketBtn').addEventListener('click', generateTicketPDF);
+
+async function generateTicketPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    let y = 10;
+    doc.setFontSize(12);
+    doc.text('*** TICKET DE VENTA ***', 20, y);
+    y += 10;
+
+    doc.text(`Cliente: ${nombreClienteInput.value}`, 10, y);
+    y += 7;
+    doc.text(`CI/RUC: ${ciRucInput.value}`, 10, y);
+    y += 7;
+    doc.text(`Fecha: ${new Date().toLocaleString()}`, 10, y);
+    y += 10;
+
+    cart.forEach(item => {
+        const line = `${item.name.substring(0, 20)} x${item.quantity} - $${(item.price * item.quantity).toFixed(2)}`;
+        doc.text(line, 10, y);
+        y += 7;
+    });
+
+    y += 5;
+    const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const cash = parseFloat(cashInput.value) || 0;
+    const change = cash - total;
+
+    doc.text('------------------------------', 10, y);
+    y += 7;
+    doc.text(`Total: $${total.toFixed(2)}`, 10, y);
+    y += 7;
+    doc.text(`Efectivo: $${cash.toFixed(2)}`, 10, y);
+    y += 7;
+    doc.text(`Cambio: $${change.toFixed(2)}`, 10, y);
+    y += 10;
+    doc.text('¡Gracias por su compra!', 20, y);
+
+    doc.save(`ticket_${new Date().toISOString().slice(0, 10)}.pdf`);
+}
