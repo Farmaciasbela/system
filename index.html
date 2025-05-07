@@ -104,17 +104,17 @@
 </head>
 <body>
     <div id="loginContainer">
-        <h2>Iniciar Sesi髇 - SISTEMA BELA</h2>
+        <h2>Iniciar Sesi贸n - SISTEMA BELA</h2>
         <label for="userSelect">Usuario:</label>
         <select id="userSelect"></select>
-        <label for="passwordInput">Contrase馻:</label>
+        <label for="passwordInput">Contrase帽a:</label>
         <input type="password" id="passwordInput" required>
-        <button id="loginButton">Iniciar Sesi髇</button>
+        <button id="loginButton">Iniciar Sesi贸n</button>
     </div>
 
     <div id="mainContainer" style="display: none;">
         <h1>Punto de Venta</h1>
-        <button id="logoutButton">Cerrar Sesi髇</button>
+        <button id="logoutButton">Cerrar Sesi贸n</button>
         <input type="file" id="fileInput" accept=".db">
         <button id="uploadButton">Cargar Base de Datos</button>
         <div id="result"></div>
@@ -144,6 +144,7 @@
             <input type="number" id="quantityInput" min="1" placeholder="Cantidad">
             <button id="clearCartBtn">Limpiar Carrito</button>
             <button id="exportReceiptBtn">Exportar Recibo</button>
+            <button id="printTicketBtn">Imprimir Ticket</button>
 
             <div>
                 <h3>Carrito</h3>
@@ -154,7 +155,7 @@
                             <th>Cantidad</th>
                             <th>Precio</th>
                             <th>Total</th>
-                            <th>Acci髇</th>
+                            <th>Acci贸n</th>
                         </tr>
                     </thead>
                     <tbody id="cartBody"></tbody>
@@ -209,8 +210,78 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        document.getElementById('printTicketBtn').addEventListener('click', function() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        unit: 'mm',
+        format: [80, 297] // 80mm ancho, largo ajustable
+    });
+
+    const rucFarmacia = document.getElementById('rucFarmacia').value || "N/A";
+    const nombreCliente = document.getElementById('nombreCliente').value || "N/A";
+    const ciRuc = document.getElementById('ciRuc').value || "N/A";
+    const ciudad = document.getElementById('ciudad').value || "N/A";
+    const correo = document.getElementById('correo').value || "N/A";
+    const totalAmount = document.getElementById('totalAmount').innerText || "$0.00";
+
+    const date = new Date();
+    const dateString = date.toLocaleDateString();
+    const timeString = date.toLocaleTimeString();
+
+    let y = 10;
+    doc.setFontSize(12);
+    doc.text("FARMACIA BELA", 10, y);
+    y += 5;
+    doc.setFontSize(10);
+    doc.text(`RUC: ${rucFarmacia}`, 10, y);
+    y += 5;
+    doc.text(`Fecha: ${dateString} ${timeString}`, 10, y);
+    y += 5;
+    doc.text("----------------------------------------", 10, y);
+    y += 5;
+    doc.text(`Cliente: ${nombreCliente}`, 10, y);
+    y += 5;
+    doc.text(`CI/RUC: ${ciRuc}`, 10, y);
+    y += 5;
+    doc.text(`Ciudad: ${ciudad}`, 10, y);
+    y += 5;
+    doc.text(`Correo: ${correo}`, 10, y);
+    y += 5;
+    doc.text("----------------------------------------", 10, y);
+    y += 5;
+    doc.text("Productos:", 10, y);
+    y += 5;
+
+    const rows = document.querySelectorAll('#cartBody tr');
+    rows.forEach(row => {
+        const cols = row.querySelectorAll('td');
+        const producto = cols[0].innerText;
+        const cantidad = cols[1].innerText;
+        const precio = cols[2].innerText;
+        const total = cols[3].innerText;
+
+        doc.text(`${producto}`, 10, y);
+        y += 4;
+        doc.text(`  Cant: ${cantidad}  P.U: $${precio}  Sub: $${total}`, 10, y);
+        y += 5;
+    });
+
+    y += 5;
+    doc.text("----------------------------------------", 10, y);
+    y += 5;
+    doc.text(`TOTAL: ${totalAmount}`, 10, y);
+    y += 5;
+    doc.text("----------------------------------------", 10, y);
+    y += 7;
+    doc.text("隆Gracias por su compra!", 10, y);
+    y += 5;
+    doc.text("Vuelva pronto.", 10, y);
+
+    doc.save('ticket.pdf');
+});
+
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
-
-
