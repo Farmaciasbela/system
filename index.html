@@ -231,7 +231,7 @@
 
     let y = 10;
     doc.setFontSize(12);
-    doc.text("FARMACIA BELA", 10, y);
+    doc.text("FARMACIAS BELA - RUC:0905906871001", 10, y);
     y += 5;
     doc.setFontSize(10);
     doc.text(`RUC: ${rucFarmacia}`, 10, y);
@@ -263,7 +263,7 @@
 
         doc.text(`${producto}`, 10, y);
         y += 4;
-        doc.text(`  Cant: ${cantidad}  P.U: $${precio}  Sub: $${total}`, 10, y);
+        doc.text(`  Cant: ${cantidad}  P.U: ${precio}  Sub: ${total}`, 10, y);
         y += 5;
     });
 
