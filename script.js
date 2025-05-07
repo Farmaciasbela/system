@@ -33,8 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let isLoggedIn = false;
 
     const users = [
-        { username: 'Kerly', password: 'Margaret04' },
-        { username: 'Eduardo', password: 'us' },
+        { username: 'Administrador', password: 'Margaret04' },
+        { username: 'Rico ñoco', password: 'us' },
     ];
 
     users.forEach(user => {
