@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginButton = document.getElementById('loginButton');
     const mainContainer = document.getElementById('mainContainer');
     const salesDateInput = document.getElementById('reportDate');
+    salesDateInput.value = new Date().toISOString().slice(0, 10);
+
     const salesReportBody = document.getElementById('salesReportBody');
     
     const nombreClienteInput = document.getElementById('nombreCliente');
