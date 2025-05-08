@@ -33,8 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let isLoggedIn = false;
 
     const users = [
-        { username: 'Gerencia', password: 'Margaret04' },
-        { username: 'Administrador', password: 'us' },
+        { username: 'Kerly', password: 'Margaret04' },
+        { username: 'Eduardo', password: 'us' },
     ];
 
     users.forEach(user => {
@@ -245,87 +245,98 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const generateSalesReport = () => {
-        if (!db) return;
+    
 
-        const selectedDate = salesDateInput.value;
-        if (!selectedDate) {
-            alert('Por favor, selecciona una fecha.');
-            return;
-        }
+const generateSalesReport = () => {
+    if (!db) return;
 
-        const query = `
-            SELECT d.ID AS DocumentID, d.Date AS DocumentDate, d.StockDate AS StockDate, d.Total AS DocumentTotal,
-                   p.Name AS ProductName, di.Price AS ProductPrice, di.Quantity AS Quantity,
-                   d.Discount AS Discount
-            FROM Document d
-            JOIN DocumentItem di ON d.ID = di.DocumentID
-            JOIN Product p ON di.ProductId = p.ID
-            WHERE DATE(d.Date) = '${selectedDate}'
-            ORDER BY d.ID
-        `;
+    const selectedDate = salesDateInput.value;
+    if (!selectedDate) {
+        alert('Por favor, selecciona una fecha.');
+        return;
+    }
 
-        const result = db.exec(query);
-        salesReportBody.innerHTML = '';
+const query = `
+    SELECT d.ID AS DocumentID, d.Date AS DocumentDate, d.StockDate AS StockDate, d.Total AS DocumentTotal,
+       p.Name AS ProductName, di.Price AS ProductPrice, di.Quantity AS Quantity,
+       d.Discount AS Discount,
+       (u.FirstName || ' ' || u.LastName) AS Usuario
+FROM Document d
+JOIN DocumentItem di ON d.ID = di.DocumentID
+JOIN Product p ON di.ProductId = p.ID
+LEFT JOIN User u ON d.UserId = u.ID
+WHERE DATE(d.Date) = '${selectedDate}'
+ORDER BY d.ID
 
-        const headerRow = document.createElement('tr');
-        headerRow.innerHTML = `
-            <th>ID Documento</th>
-            <th>Fecha</th>
-            <th>Fecha de Stock</th>
-            <th>Total Documento</th>
-            <th>Producto</th>
-            <th>Precio</th>
-            <th>Cantidad</th>
-            <th>Descuento</th>
-        `;
-        salesReportBody.appendChild(headerRow);
+`;
 
-        let totalByDocument = {};
-        let totalDaySum = 0;
+    const result = db.exec(query);
+    salesReportBody.innerHTML = '';
 
-        if (result.length > 0) {
-            result[0].values.forEach(row => {
-                const documentID = row[0];
-                const documentDate = row[1];
-                const stockDate = row[2];
-                const documentTotal = row[3];
-                const productName = row[4];
-                const productPrice = row[5];
-                const quantity = row[6];
-                const discount = row[7];
+    const headerRow = document.createElement('tr');
+    headerRow.innerHTML = `
+        <th>ID Documento</th>
+        <th>Fecha</th>
+        <th>Fecha de Stock</th>
+        <th>Total Documento</th>
+        <th>Producto</th>
+        <th>Precio</th>
+        <th>Cantidad</th>
+        <th>Descuento</th>
+        <th>Usuario</th>
+    `;
+    salesReportBody.appendChild(headerRow);
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${documentID}</td>
-                    <td>${documentDate}</td>
-                    <td>${stockDate}</td>
-                    <td>$${documentTotal.toFixed(2)}</td>
-                    <td>${productName}</td>
-                    <td>$${productPrice.toFixed(2)}</td>
-                    <td>${quantity}</td>
-                    <td>$${discount.toFixed(2)}</td>
-                `;
-                salesReportBody.appendChild(tr);
+    let totalByDocument = {};
+    let totalDaySum = 0;
 
-                if (!totalByDocument[documentID]) {
-                    totalByDocument[documentID] = documentTotal;
-                    totalDaySum += documentTotal;
-                }
-            });
+    if (result.length > 0) {
+        result[0].values.forEach(row => {
+            const documentID = row[0];
+            const documentDate = row[1];
+            const stockDate = row[2];
+            const documentTotal = row[3];
+            const productName = row[4];
+            const productPrice = row[5];
+            const quantity = row[6];
+            const discount = row[7];
+            const username = row[8];
 
-            const totalRow = document.createElement('tr');
-            totalRow.innerHTML = `
-                <td colspan="3"><strong>Total del D�a</strong></td>
-                <td><strong>$${totalDaySum.toFixed(2)}</strong></td>
-                <td colspan="4"></td>
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${documentID}</td>
+                <td>${documentDate}</td>
+                <td>${stockDate}</td>
+                <td>$${documentTotal.toFixed(2)}</td>
+                <td>${productName}</td>
+                <td>$${productPrice.toFixed(2)}</td>
+                <td>${quantity}</td>
+                <td>$${discount.toFixed(2)}</td>
+                <td>${username}</td>
             `;
-            salesReportBody.appendChild(totalRow);
+            salesReportBody.appendChild(tr);
 
-        } else {
-            salesReportBody.innerHTML += '<tr><td colspan="8">No se encontraron resultados.</td></tr>';
-        }
-    };
+            if (!totalByDocument[documentID]) {
+                totalByDocument[documentID] = documentTotal;
+                totalDaySum += documentTotal;
+            }
+        });
+
+        const totalRow = document.createElement('tr');
+        totalRow.innerHTML = `
+            <td colspan="3"><strong>Total del Día</strong></td>
+            <td><strong>$${totalDaySum.toFixed(2)}</strong></td>
+            <td colspan="5"></td>
+        `;
+        salesReportBody.appendChild(totalRow);
+
+    } else {
+        salesReportBody.innerHTML += '<tr><td colspan="9">No se encontraron resultados.</td></tr>';
+    }
+};
+
+
+
 
     uploadButton.addEventListener('click', () => {
         const file = fileInput.files[0];
