@@ -21,7 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginButton = document.getElementById('loginButton');
     const mainContainer = document.getElementById('mainContainer');
     const salesDateInput = document.getElementById('reportDate');
-    salesDateInput.value = new Date().toISOString().slice(0, 10);
+    // Cambia esta línea
+	salesDateInput.value = new Date().toLocaleDateString('en-CA');
+
 
     const salesReportBody = document.getElementById('salesReportBody');
     
@@ -35,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let isLoggedIn = false;
 
     const users = [
-        { username: 'Kerly', password: 'Margaret04' },
-        { username: 'Eduardo', password: 'us' },
+        { username: 'Gerencia', password: 'Margaret04' },
+        { username: 'Administracion', password: 'us' },
     ];
 
     users.forEach(user => {
@@ -290,6 +292,7 @@ ORDER BY d.ID
     salesReportBody.appendChild(headerRow);
 
     let totalByDocument = {};
+    let totalByUser = {};
     let totalDaySum = 0;
 
     if (result.length > 0) {
@@ -318,10 +321,20 @@ ORDER BY d.ID
             `;
             salesReportBody.appendChild(tr);
 
-            if (!totalByDocument[documentID]) {
-                totalByDocument[documentID] = documentTotal;
-                totalDaySum += documentTotal;
-            }
+        if (!totalByDocument[documentID]) {
+    totalByDocument[documentID] = documentTotal;
+    totalDaySum += documentTotal;
+    
+    if (username) {
+        if (!totalByUser[username]) {
+            totalByUser[username] = 0;
+        }
+        totalByUser[username] += documentTotal;
+    }
+}
+   
+
+ 
         });
 
         const totalRow = document.createElement('tr');
@@ -331,6 +344,18 @@ ORDER BY d.ID
             <td colspan="5"></td>
         `;
         salesReportBody.appendChild(totalRow);
+
+
+for (const [user, total] of Object.entries(totalByUser)) {
+    const userRow = document.createElement('tr');
+    userRow.innerHTML = `
+        <td colspan="3"><strong>Total de ${user}</strong></td>
+        <td><strong>$${total.toFixed(2)}</strong></td>
+        <td colspan="5"></td>
+    `;
+    salesReportBody.appendChild(userRow);
+}
+
 
     } else {
         salesReportBody.innerHTML += '<tr><td colspan="9">No se encontraron resultados.</td></tr>';
