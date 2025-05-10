@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginButton = document.getElementById('loginButton');
     const mainContainer = document.getElementById('mainContainer');
     const salesDateInput = document.getElementById('reportDate');
+ 
     // Cambia esta línea
 	salesDateInput.value = new Date().toLocaleDateString('en-CA');
 
@@ -31,6 +32,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const ciRucInput = document.getElementById('ciRuc');
     nombreClienteInput.value = 'Consumidor Final';
     ciRucInput.value = '9999999999999';
+  const clearCart = () => {
+    cart = [];
+    updateCartDisplay();
+    updateTotal();
+    cashInput.value = '';
+    changeAmount.textContent = '$0.00';
+};
+
+// Luego se añade el eventListener al botón 'clearCartBtn'
+document.getElementById('clearCartBtn').addEventListener('click', clearCart);
+
 
     let db = null;
     let cart = [];
@@ -199,13 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateTotal();
     };
 
-    const clearCart = () => {
-        cart = [];
-        updateCartDisplay();
-        updateTotal();
-        cashInput.value = '';
-        changeAmount.textContent = '$0.00';
-    };
+   
 
     const loadStockReport = () => {
         if (!db) return;
@@ -391,6 +397,7 @@ for (const [user, total] of Object.entries(totalByUser)) {
         puntoVentaContainer.style.display = 'block';
         stockReportContainer.style.display = 'none';
         salesReportContainer.style.display = 'none';
+      productSearchInputPV.focus(); 
     });
 
     document.getElementById('stockBtn').addEventListener('click', () => {
@@ -414,8 +421,10 @@ for (const [user, total] of Object.entries(totalByUser)) {
         mainContainer.style.display = 'none';
         clearCart();
     });
-});
 document.getElementById('printTicketBtn').addEventListener('click', generateTicketPDF);
+
+});
+
 
 async function generateTicketPDF() {
     const { jsPDF } = window.jspdf;
@@ -452,7 +461,9 @@ async function generateTicketPDF() {
     y += 7;
     doc.text(`Cambio: $${change.toFixed(2)}`, 10, y);
     y += 10;
+    
     doc.text('¡Gracias por su compra!', 20, y);
 
     doc.save(`ticket_${new Date().toISOString().slice(0, 10)}.pdf`);
+    clearCart(); // Vacía el carrito automáticamente
 }
